@@ -1,0 +1,37 @@
+#cloud-config
+
+groups:
+  - ubuntu: [root, sys]
+  - hashicorp
+
+# Add users to the system. Users are added after groups are added.
+users:
+  - default
+  - name: terraform
+    gecos: terraform
+    shell: /bin/bash
+    primary_group: hashicorp
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: users, admin
+    lock_passwd: false
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDQg6bwxkkXWI9QwYhWNC6pOeUH92xLh3a2cN9s8s2X0FSDbPR8kfz09Q+95+1fGiBBEiNKNPzdf+dicnfWn2D1Qp/gjmWx982ZLqckuGWPsVshj6XVz4Fx6D9E6v5NQmS4a3u9nGx9uIrDl6jfM76wlrzIrs7O1xdoupISG11ueSilTcF7gPGA6ygvACJ5w1rfl1qnwsaEAdSYrJOgeftMtCLGpfR84/Rlu7lYADYwFqI1LSFcGine2qSAKJKwg8gwmBtAvUOGVtQLp7SL23l2rfa6ftAan5sQEHYNZRY4jKa0C6vRtaaqFbVfy+/93yMSgIl92zKxjaE/Tz7m+2uEqiwunDS7JdMMuB4Pk0R0PhNAjpCEcP2gJiVNPEQfzEnTI/yivCv1Ffc28fwUrvjexAyi4Tstty6cfjLac8m0x7pG4qOaNVl99UWSvHS9eMP5k2/GrclK0G/zI2s8ReGrWS6jDfYWvWmrDn6ijq/I3hzlmk61PEugH970MUJCkCk= your_email@example.com
+
+# Sets the GOPATH & downloads the demo payload
+#cloud-config
+
+runcmd:
+  - echo "Provisioning as root user..."
+  - whoami
+  - pwd
+  - apt update -y # Update package lists
+  - sudo apt install -y python3-pip python3-venv curl # Install Python3 pip, venv, and curl
+  - python3 -m venv flask-env # Create a Python virtual environment
+  - source flask-env/bin/activate # Activate the virtual environment
+  - pip install flask # Install Flask in the virtual environment
+  - curl -o app.py https://raw.githubusercontent.com/mathesh-me/application-deployment-in-aws-terraform-provisioner/main/Flask%20Application/app.py # Download the app.py
+  - mkdir -p templates # Create templates directory
+  - curl -o templates/index.html https://raw.githubusercontent.com/mathesh-me/application-deployment-in-aws-terraform-provisioner/main/Flask%20Application/templates/index.html # Download the index.html template
+  - chmod +x app.py
+  - python3 app.py # Run the Flask app
+
