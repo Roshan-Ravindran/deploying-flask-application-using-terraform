@@ -27,10 +27,6 @@ The hosted website is deployed on an AWS EC2 instance using a pre-configured Ter
    - **VPC and Subnet**: The instance is provisioned in a public subnet.
    - **Security Groups**: Allow inbound traffic on necessary ports (e.g., port 80 for HTTP).
 
-3. **Cloud-Config file**:
-   - Sets up user accounts and permissions.
-   - Shell script to install required software (e.g., Flask) and deploy the website.
-
 ## Terraform Configuration
 
 The Terraform script provisions the following resources:
@@ -60,6 +56,12 @@ resource "aws_instance" "ubuntu" {
 - creates security group to be attached to the EC2 instance to allow TCP connections on port 22 and 5000 for SSH and HTTP connection
 
 ### cloud-config File:
+
+#### Cloud-Config file:
+
+- Sets up user accounts and permissions.
+- adds ssh public key to the linux machine to SSH. (can use key-name attribute from instance as well.)
+- Shell script to install required software (e.g., Flask) and deploy the website.
 
 ```yaml
 #cloud-config
