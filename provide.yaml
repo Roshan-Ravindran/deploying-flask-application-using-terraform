@@ -21,17 +21,14 @@ users:
 #cloud-config
 
 runcmd:
-  - echo "Provisioning as root user..."
-  - whoami
-  - pwd
   - apt update -y # Update package lists
   - sudo apt install -y python3-pip python3-venv curl # Install Python3 pip, venv, and curl
   - python3 -m venv flask-env # Create a Python virtual environment
-  - source flask-env/bin/activate # Activate the virtual environment
+  - . flask-env/bin/activate # Activate the virtual environment
   - pip install flask # Install Flask in the virtual environment
-  - curl -o app.py https://raw.githubusercontent.com/mathesh-me/application-deployment-in-aws-terraform-provisioner/main/Flask%20Application/app.py # Download the app.py
+  - curl -o app.py https://raw.githubusercontent.com/Roshan-Ravindran/deploying-flask-application-using-terraform/refs/heads/master/flask/app.py # Download the app.py
   - mkdir -p templates # Create templates directory
-  - curl -o templates/index.html https://raw.githubusercontent.com/mathesh-me/application-deployment-in-aws-terraform-provisioner/main/Flask%20Application/templates/index.html # Download the index.html template
-  - chmod +x app.py
+  - curl -o templates/index.html https://raw.githubusercontent.com/Roshan-Ravindran/deploying-flask-application-using-terraform/refs/heads/master/flask/templates/index.html # Download the index.html template
+  - chmod +x app.py # Make app.py executable
   - python3 app.py # Run the Flask app
 
