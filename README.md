@@ -27,86 +27,73 @@ The hosted website is deployed on an AWS EC2 instance using a pre-configured Ter
    - **VPC and Subnet**: The instance is provisioned in a public subnet.
    - **Security Groups**: Allow inbound traffic on necessary ports (e.g., port 80 for HTTP).
 
-3. **Cloud-Config**:
+3. **Cloud-Config file**:
    - Sets up user accounts and permissions.
-   - Installs required software (e.g., Flask).
-   - Deploys the website.
+   - Shell script to install required software (e.g., Flask) and deploy the website.
 
 ## Terraform Configuration
 
 The Terraform script provisions the following resources:
 
-1. **EC2 Instance**:
-
-   - Provisions an Ubuntu instance with the specified AMI.
-   - Attaches the `cloud-config` file via the `user_data` argument.
-   - Associates the instance with a security group.
-
-2. **Security Group**:
-
-   - Allows inbound traffic on:
-     - Port 22 (SSH).
-     - Port 5000 (for HTTP connection).
-
-3. **User Data (Cloud-Config)**:
-   - Configures the instance with:
-     - A `terraform` user with SSH access.
-     - Flask installation and environment setup.
-
-### Example Terraform Configuration
+### EC2 Instance:
 
 ```hcl
 resource "aws_instance" "ubuntu" {
   ami                         = "ami-04b4f1a9cf54c11d0"
   instance_type               = "t2.micro"
   subnet_id                   = aws_subnet.subnet_public.id
-  vpc_security_group_ids      = [aws_security_group.sg_22_80.id]
+  vpc_security_group_ids      = [aws_security_group.sg_22_5000.id]
   user_data                   = file("provide.yaml")
 }
 ```
 
-## Cloud-Config File
+### network.tf file
 
-The `cloud-config` file contains:
+- creates a VPC in 10.0.0.0/16
+- creates a internet gateway for the VPC
+- creates a subnet inside the VPC (10.1.0.0/24)
+- creates a route table to route any traffic destined to 0.0.0.0/0 to go through via internet gateway
+- creates a route table association by attaching the route table to the subnet created
 
-1. **User Configuration**:
+### securitygroup.tf
 
-   - Adds a `terraform` user with SSH access.
-   - Configures SSH keys for secure login.
+- creates security group to be attached to the EC2 instance to allow TCP connections on port 22 and 5000 for SSH and HTTP connection
 
-2. **Software Installation**:
-
-   - Updates package lists and installs dependencies (Python, Flask, etc.).
-   - Sets up a Python virtual environment.
-
-3. **Website Deployment**:
-   - Deploys a simple Flask application.
-
-### Example Cloud-Config
+### cloud-config File:
 
 ```yaml
 #cloud-config
 groups:
-  - terraform
+  - ubuntu: [root, sys]
+  - hashicorp
 
+# Add users to the system. Users are added after groups are added.
 users:
+  - default
   - name: terraform
     gecos: terraform
     shell: /bin/bash
-    primary_group: terraform
+    primary_group: hashicorp
     sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: users, admin
     lock_passwd: false
     ssh_authorized_keys:
-      - ssh-rsa AAAAB3...your-key...
+      - ssh-rsa yourkeyhere.... example@gmail.com
+
+# Sets the GOPATH & downloads the demo payload
+#cloud-config
 
 runcmd:
-  - apt update -y
-  - apt install -y python3-pip python3-venv curl
-  - python3 -m venv flask-env
-  - source flask-env/bin/activate
-  - pip install flask
-  - echo "from flask import Flask; app = Flask(__name__); @app.route('/')\ndef hello(): return 'Hello, World!'; app.run(host='0.0.0.0')" > app.py
-  - nohup python3 app.py &
+  - apt update -y # Update package lists
+  - sudo apt install -y python3-pip python3-venv curl # Install Python3 pip, venv, and curl
+  - python3 -m venv flask-env # Create a Python virtual environment
+  - . flask-env/bin/activate # Activate the virtual environment
+  - pip install flask # Install Flask in the virtual environment
+  - curl -o app.py https://raw.githubusercontent.com/Roshan-Ravindran/deploying-flask-application-using-terraform/refs/heads/master/flask/app.py # Download the app.py
+  - mkdir -p templates # Create templates directory
+  - curl -o templates/index.html https://raw.githubusercontent.com/Roshan-Ravindran/deploying-flask-application-using-terraform/refs/heads/master/flask/templates/index.html # Download the index.html template
+  - chmod +x app.py # Make app.py executable
+  - python3 app.py # Run the Flask app
 ```
 
 ## Deployment Steps
@@ -127,48 +114,22 @@ runcmd:
 
 3. **Access the Website**:
 
-   - Use the public IP of the EC2 instance to access the website in your browser: `http://<PUBLIC_IP>`.
+   - Use the public IP of the EC2 instance to access the website in your browser: `http://<PUBLIC_IP>:5000`.
 
 4. **SSH Access**:
    ```bash
-   ssh -i <key.pem> ubuntu@<PUBLIC_IP>
+   ssh terraform@$(terraform output -raw web_public_ip) -i /path/to/ssh-private-key
    ```
 
 ## Troubleshooting
 
-1. **User Creation Failures**:
-
-   - Ensure `lock_passwd: false` and a valid `ssh_authorized_keys` entry.
-
-2. **Software Installation Errors**:
+1. **Software Installation Errors**:
 
    - If pip installation fails, ensure the virtual environment is activated correctly.
 
-3. **Access Issues**:
+2. **Access Issues**:
+
    - Verify the security group allows inbound traffic on required ports.
+
+3. **Troubleshoot shell script:**
    - Check the `cloud-init` logs at `/var/log/cloud-init-output.log` for errors.
-
-## Tools and Dependencies
-
-1. **Terraform**: Infrastructure as Code.
-2. **AWS CLI**: Configures and manages AWS resources.
-3. **Flask**: Python web framework for the hosted website.
-
-## Challenges and Solutions
-
-1. **SSH Access Issues**:
-
-   - Resolved by correctly setting up the `ssh_authorized_keys` in the cloud-config file.
-
-2. **Pip Installation Errors**:
-   - Used `python3 -m ensurepip` to ensure pip was available in the virtual environment.
-
-## Next Steps
-
-1. Add monitoring for the EC2 instance (e.g., using CloudWatch).
-2. Automate deployments with CI/CD pipelines.
-3. Secure the instance further by restricting access to specific IP ranges.
-
-## Author
-
-Roshan
