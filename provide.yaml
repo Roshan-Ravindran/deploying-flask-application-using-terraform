@@ -15,7 +15,7 @@ users:
     groups: users, admin
     lock_passwd: false
     ssh_authorized_keys:
-      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDQg6bwxkkXWI9QwYhWNC6pOeUH92xLh3a2cN9s8s2X0FSDbPR8kfz09Q+95+1fGiBBEiNKNPzdf+dicnfWn2D1Qp/gjmWx982ZLqckuGWPsVshj6XVz4Fx6D9E6v5NQmS4a3u9nGx9uIrDl6jfM76wlrzIrs7O1xdoupISG11ueSilTcF7gPGA6ygvACJ5w1rfl1qnwsaEAdSYrJOgeftMtCLGpfR84/Rlu7lYADYwFqI1LSFcGine2qSAKJKwg8gwmBtAvUOGVtQLp7SL23l2rfa6ftAan5sQEHYNZRY4jKa0C6vRtaaqFbVfy+/93yMSgIl92zKxjaE/Tz7m+2uEqiwunDS7JdMMuB4Pk0R0PhNAjpCEcP2gJiVNPEQfzEnTI/yivCv1Ffc28fwUrvjexAyi4Tstty6cfjLac8m0x7pG4qOaNVl99UWSvHS9eMP5k2/GrclK0G/zI2s8ReGrWS6jDfYWvWmrDn6ijq/I3hzlmk61PEugH970MUJCkCk= your_email@example.com
+      - ssh-rsa yourkeyhere.... example@gmail.com
 
 # Sets the GOPATH & downloads the demo payload
 #cloud-config

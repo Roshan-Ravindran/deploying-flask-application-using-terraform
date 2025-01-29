@@ -6,6 +6,8 @@ This README documents the steps and configurations used to host a website on an 
 
 The hosted website is deployed on an AWS EC2 instance using a pre-configured Terraform script and a `cloud-config` file. Terraform provisions the infrastructure, and the cloud-config file sets up the EC2 instance with the necessary software and configurations for the website.
 
+![diagram](https://github.com/mathesh-me/application-deployment-in-aws-terraform/assets/144098846/03e4386d-3d6f-4d96-ba07-fe828175a634)
+
 ## Prerequisites
 
 1. **Terraform**: Ensure Terraform is installed (v1.x or later).
@@ -19,7 +21,6 @@ The hosted website is deployed on an AWS EC2 instance using a pre-configured Ter
 
    - **AMI**: Ubuntu (e.g., `ami-04b4f1a9cf54c11d0`).
    - **Instance Type**: `t2.micro`.
-   - **Key Pair**: Used for secure SSH access.
 
 2. **Networking**:
 
@@ -45,7 +46,7 @@ The Terraform script provisions the following resources:
 
    - Allows inbound traffic on:
      - Port 22 (SSH).
-     - Port 80 (HTTP).
+     - Port 5000 (for HTTP connection).
 
 3. **User Data (Cloud-Config)**:
    - Configures the instance with:
@@ -59,7 +60,6 @@ resource "aws_instance" "ubuntu" {
   ami                         = "ami-04b4f1a9cf54c11d0"
   instance_type               = "t2.micro"
   subnet_id                   = aws_subnet.subnet_public.id
-  key_name                    = "testing"
   vpc_security_group_ids      = [aws_security_group.sg_22_80.id]
   user_data                   = file("provide.yaml")
 }
